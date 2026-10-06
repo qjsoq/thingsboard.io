@@ -24,7 +24,7 @@ So we set out to change the game. What we needed was a relational database that 
 
 ## What actually gets hot
 
-<img src="/images/blog/scaling-postgresql-horizontally-with-citus-for-millions-of-iot-devices/what-actually-gets-hot.webp" alt="Heatmap of device rows on one PostgreSQL server, all running hot, with write capacity saturated" style={{margin:'16px auto'}} />
+<img src="/images/blog/scaling-postgresql-horizontally-with-citus-for-millions-of-iot-devices/what-actually-gets-hot.svg" alt="ThingsBoard architecture with one PostgreSQL server: devices connect through MQTT, HTTP, CoAP and LwM2M transports, telemetry history goes to Cassandra at normal load, and every attribute and latest-value update funnels into PostgreSQL, which runs hot with its write capacity saturated" style={{margin:'16px auto'}} />
 
 Telemetry history is the obvious suspect, and it can be heavy, but it is the easy part to spread over many servers. Large deployments usually keep it in Cassandra, which is built to do exactly that.
 
@@ -48,7 +48,7 @@ Which resource gives out first depends on the deployment. In write-heavy install
 
 ## The solution
 
-<img src="/images/blog/scaling-postgresql-horizontally-with-citus-for-millions-of-iot-devices/the-solution.webp" alt="The same device rows split across four Citus workers, each running cool with spare write capacity" style={{margin:'16px auto'}} />
+<img src="/images/blog/scaling-postgresql-horizontally-with-citus-for-millions-of-iot-devices/the-solution.svg" alt="The same architecture with PostgreSQL replaced by a Citus cluster: ThingsBoard writes attributes and latest values straight to four workers, each at normal load, while the coordinator stays off the write path" style={{margin:'16px auto'}} />
 
 The requirement was a relational database that absorbs more writes when you add servers, without giving up SQL or transactional correctness, and one that installations already in production could move to without being rebuilt around it. That second condition carried most of the weight. Changing the database engine means reworking the schema, the application layer, the backup procedure and the monitoring, then repeating that work in every self-hosted deployment, and here it would have run against a fleet that was already growing and a date that could not move. What we needed was a way to spread the writes that stayed inside PostgreSQL itself.
 
