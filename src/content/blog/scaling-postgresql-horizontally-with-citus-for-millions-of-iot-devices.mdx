@@ -14,13 +14,9 @@ import BlogCTA from '~/components/Blog/BlogCTA.astro';
 
 A customer came to us with a fleet that was about to grow more than seven times bigger. They already had almost 700,000 devices in production, and they planned to reach five million within a few months. Many of the new devices were cameras, which send far more data per device than a typical sensor. They could not move the deadline, and the fleet kept growing while we worked.
 
-On paper, ThingsBoard is purpose-built for horizontal scalability. Scaling device connectivity is a matter of provisioning additional transport nodes, while telemetry growth is handled by expanding the time-series database cluster. Every layer of the platform scales out seamlessly by adding machines — an approach that has proven reliable for years.
+Deployments of this size have had a proven way to grow for years. Device connections scale by adding transport servers, and the full telemetry history goes to Cassandra, which grows by adding servers too. At millions of devices, these deployments switched off one thing: storing each device's latest readings in PostgreSQL. The full history was still recorded, and the trade-off was on dashboards, which could no longer filter and sort devices by their current readings. Until now, customers at that scale accepted it.
 
-Every layer except one. The relational database at the centre of the platform grows in a different direction — upwards. A bigger instance, faster disks, another round of tuning.
-
-This is vertical scaling. It lets the database carry more load, but the gains come in fixed steps, each costing more than the last while adding less throughput. The steps end because there is a largest machine on offer and nothing beyond it, so a bigger machine raises the limit without removing it.
-
-So we set out to change the game. What we needed was a relational database that grows by adding servers rather than by replacing them, in time for a deadline that could not move.
+This customer could not. Their teams needed to find and sort devices by current state across the whole fleet, so the latest readings had to be stored and kept current for all five million devices. A single PostgreSQL server grows only upwards, with a bigger instance and faster disks, and each step costs more and adds less. What we needed was a relational database that grows by adding servers rather than by replacing them, in time for a deadline that could not move.
 
 ## What actually gets hot
 
@@ -33,6 +29,8 @@ The pressure comes from a much smaller set of data: each device's attributes and
 That property decides whether a table can be spread across servers. Every telemetry message adds a new record to history, so no two writes ever target the same one: Cassandra places them by partition key across the cluster, and none of them waits on another. Latest values work the other way round. Each write targets a record that already exists, so it has to reach the server holding that record — and with a single PostgreSQL instance, that is the same server for all five million devices.
 
 The volume grows faster than the message count suggests. A smart meter sending three telemetry keys in one message produces three row updates rather than one, and an industrial controller reporting ten keys produces ten. Every one of those updates has to be applied, because dashboards, alarm rules, calculated fields and entity data queries all read the latest values and depend on them being current.
+
+Moving the latest values to Cassandra as well would not solve this, because of how they are used. Cassandra is built to absorb immense volumes of writes, but it reads quickly only when it knows exactly where to look, such as one device's history over a period of time. Latest values feed the dashboards and reports people work with every day, where they search, filter and sort across the whole fleet in ways nobody plans in advance. That kind of reading is where Cassandra struggles and PostgreSQL does well. So the latest values stay in PostgreSQL, and the task became spreading PostgreSQL itself across servers.
 
 ## Why a bigger machine isn't the same as more machines
 
@@ -168,7 +166,7 @@ Running PostgreSQL as a cluster changes what a ThingsBoard deployment can grow i
 
 ThingsBoard can now spread its relational database across several servers instead of keeping it on one. Each device's writes go to one of those servers instead of all of them arriving at the same one. Nothing changes for the people using the system, because dashboards, rule chains and integrations work exactly as before.
 
-That closes the last gap in the architecture. The rest of the platform has always grown by adding machines, and now the database grows the same way.
+Large deployments no longer have to choose between scale and filtering dashboards by current readings: the relational database now grows by adding machines, the same way the rest of the platform does.
 
 A cluster is more to run than a single server, so it is worth choosing deliberately. A well-tuned single database with room to spare is still the simpler answer, and the case for a cluster begins when the write load outgrows it.
 
