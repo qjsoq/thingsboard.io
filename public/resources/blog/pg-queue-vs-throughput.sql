@@ -13,7 +13,7 @@ BEGIN
 
   -- guard: sampling the wrong database silently yields all-zero deltas
   IF current_database() <> 'thingsboard' THEN
-    RAISE EXCEPTION 'connected to "postgres"; reconnect with -d thingsboard';
+    RAISE EXCEPTION 'connected to "%"; reconnect with -d thingsboard', current_database();
   END IF;
 
   IF is_citus THEN
