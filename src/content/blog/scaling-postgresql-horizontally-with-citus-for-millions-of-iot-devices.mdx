@@ -1,15 +1,15 @@
 ---
 title: 'How to Scale PostgreSQL Horizontally with Citus for Millions of IoT Devices'
 description: 'ThingsBoard 4.4 scales PostgreSQL horizontally with Citus. See how a four-worker cluster kept up with 134,000 updates a second across 5 million IoT devices.'
-date: 2026-10-06
-updatedDate: 2026-10-06
+date: 2026-10-09
+updatedDate: 2026-10-09
 author: dmytro-artamonov
 categories: ['tech', 'updates']
 featuredImage: '/images/blog/scaling-postgresql-horizontally-with-citus-for-millions-of-iot-devices/cover.webp'
 featuredImageAlt: 'Streams of device data flowing into four database shards, with a fifth outlined as the next server to add'
 ---
-import BlogCTA from '~/components/Blog/BlogCTA.astro';
-import BlogCallout from '~/components/Blog/BlogCallout.astro';
+import BlogCTA from '@components/Blog/BlogCTA.astro';
+import BlogCallout from '@components/Blog/BlogCallout.astro';
 
 A customer came to us with almost 700,000 devices in production and a plan to reach five million within a few months. Many of the new devices were cameras, which send far more data than a typical sensor. They could not move the deadline, and the fleet kept growing while we worked.
 
@@ -180,7 +180,7 @@ Running PostgreSQL as a cluster changes what a ThingsBoard deployment can grow i
 ### What to plan for
 
 - **CPU across the cluster.** A cluster uses more processor time in total than one server would, because every node runs a database of its own and work spanning several nodes is planned and combined across them. Part of what you save on storage goes to compute.
-- **Operations across several nodes.** Patching, backups, monitoring and capacity planning cover every node rather than one. [ThingsBoard Private Cloud](/pricing/?product=thingsboard-private-cloud&solution=pe-perpetual) can take this on for you.
+- **Operations across several nodes.** Patching, backups, monitoring and capacity planning cover every node rather than one. [ThingsBoard Private Cloud](/pricing/?product=thingsboard-private-cloud) can take this on for you.
 - **Fleet-wide queries.** A lookup for a single device is answered by the worker holding it, while a query across many devices runs on several workers in parallel and the coordinator combines their results.
 - **Shard count.** The number of shards is set when the tables are distributed, so size it for the largest number of workers you expect to run. Plan the cluster around the fleet it will reach, not the one it starts with.
 
@@ -196,7 +196,7 @@ Citus support is available in ThingsBoard 4.4 and in ThingsBoard Professional Ed
 
 ## Let us run it for you on ThingsBoard Private Cloud
 
-Most of the work with a cluster starts after it's switched on. Shards have to be sized for the fleet you'll reach, the coordinator and workers have to be backed up and restored together, every node needs monitoring, and new workers have to be added and rebalanced as devices arrive. [ThingsBoard Private Cloud](/pricing/?product=thingsboard-private-cloud&solution=pe-perpetual) takes that work off your hands. It's a fully managed, isolated ThingsBoard cluster with an uptime SLA, and our team can set up and operate a Citus-backed cluster for you:
+Most of the work with a cluster starts after it's switched on. Shards have to be sized for the fleet you'll reach, the coordinator and workers have to be backed up and restored together, every node needs monitoring, and new workers have to be added and rebalanced as devices arrive. [ThingsBoard Private Cloud](/pricing/?product=thingsboard-private-cloud) takes that work off your hands. It's a fully managed, isolated ThingsBoard cluster with an uptime SLA, and our team can set up and operate a Citus-backed cluster for you:
 
 - **Sizing up front.** We work out how many workers you need, set the shard count for your target fleet rather than today's, and choose instance and storage types to match your write profile.
 - **Deployment.** We deploy Citus with smart routing next to your ThingsBoard cluster, configured and tested against your device profiles.
@@ -210,6 +210,6 @@ If you're planning a deployment at this scale, contact us early about ThingsBoar
   title="Run your cluster on ThingsBoard Private Cloud"
   buttons={[
     { text: "Contact us", href: "/contact-us/?subject=Private%20Cloud" },
-    { text: "Private Cloud pricing", href: "/pricing/?product=thingsboard-private-cloud&solution=pe-perpetual", variant: "outline" }
+    { text: "Private Cloud pricing", href: "/pricing/?product=thingsboard-private-cloud", variant: "outline" }
   ]}
 />
